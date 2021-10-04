@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+group 'com.chermehdi'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
+    implementation project(':quik-core')
+    // Adding quik core as the annotation processor
+    annotationProcessor project(':quik-core')
+}
+
+test {
+    useJUnitPlatform()
+}
