@@ -73,6 +73,7 @@ public class JsonProcessor extends AbstractProcessor {
     builder.fullyQualifiedName(element.getQualifiedName().toString());
 
     builder.type(element.asType());
+    builder.packageName(getPackageName(element.getQualifiedName().toString()));
     var fields = elements.getAllMembers(element).stream()
         .filter(e -> e.getKind() == ElementKind.FIELD)
         .collect(Collectors.toList());
@@ -96,6 +97,15 @@ public class JsonProcessor extends AbstractProcessor {
     var classModel = builder.build();
 
     generateEncoder(classModel);
+  }
+
+  private String getPackageName(String fullyQualifiedName) {
+    int dot = fullyQualifiedName.lastIndexOf('.');
+    if(dot < 0) {
+      // No package.
+      return fullyQualifiedName;
+    }
+    return fullyQualifiedName.substring(0, dot);
   }
 
   private void generateEncoder(ClassModel model) {
@@ -124,7 +134,7 @@ public class JsonProcessor extends AbstractProcessor {
 
     var encoder = encoderBuilder.addMethod(encodeMethodBuilder.build()).build();
 
-    var jFile = JavaFile.builder("com.chermehdi.quik.examples", encoder)
+    var jFile = JavaFile.builder(model.getPackageName(), encoder)
         .build();
     try {
       jFile.writeTo(filer);

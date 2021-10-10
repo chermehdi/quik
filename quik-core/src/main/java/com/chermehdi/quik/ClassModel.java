@@ -9,6 +9,7 @@ public class ClassModel {
 
   private String name;
   private String fullyQualifiedName;
+  private String packageName;
   private List<MethodModel> getters;
   private List<MethodModel> setters;
   private TypeMirror type;
@@ -42,6 +43,10 @@ public class ClassModel {
     return type;
   }
 
+  public String getPackageName() {
+    return packageName;
+  }
+
   public static class ClassModelBuilder {
 
     private ClassModel model;
@@ -72,6 +77,11 @@ public class ClassModel {
 
     public ClassModelBuilder type(TypeMirror type) {
       this.model.type = type;
+      return this;
+    }
+
+    public ClassModelBuilder packageName(String packageName) {
+      this.model.packageName = packageName;
       return this;
     }
 
