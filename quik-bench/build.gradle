@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id "me.champeau.jmh" version "0.6.6"
+}
+
+version 'unspecified'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    jmh 'org.openjdk.jmh:jmh-core:0.9'
+    jmh 'org.openjdk.jmh:jmh-generator-annprocess:0.9'
+
+    implementation project(':quik-core')
+    // Adding quik core as the annotation processor
+    annotationProcessor project(':quik-core')
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.9'
+}
+
+test {
+    useJUnitPlatform()
+}

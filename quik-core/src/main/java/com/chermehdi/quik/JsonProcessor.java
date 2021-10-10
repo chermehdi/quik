@@ -8,8 +8,7 @@ import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+import java.io.OutputStream;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -106,20 +105,22 @@ public class JsonProcessor extends AbstractProcessor {
 
     var encodeMethodBuilder = MethodSpec.methodBuilder("encode")
         .addParameter(ParameterSpec.builder(TypeName.get(model.getType()), "value").build())
-        .returns(byte[].class)
-        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-        .addStatement("var buffer = $T.allocate(1024)", ByteBuffer.class);
+        .addParameter(OutputStream.class, "out")
+        .returns(void.class)
+        .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
 
-    encodeMethodBuilder.addStatement("$T.write('{', buffer)", Encoders.class);
+    encodeMethodBuilder.addStatement("$T.write('{', out)", Encoders.class);
+    boolean first = true;
     for (MethodModel getter : model.getGetters()) {
+      if (!first) {
+        encodeMethodBuilder.addStatement("$T.write(',', out)", Encoders.class);
+      }
       writeFieldName(encodeMethodBuilder, getter);
-      encodeMethodBuilder.addStatement("$T.write(value.$N(), buffer)", Encoders.class, getter.methodName());
+      writeComma(encodeMethodBuilder);
+      writeValue(encodeMethodBuilder, getter);
+      first = false;
     }
-    encodeMethodBuilder.addStatement("$T.write('}', buffer)", Encoders.class);
-
-
-    encodeMethodBuilder.addStatement("return $T.copyOfRange(buffer.array(), 0, buffer.position())",
-        Arrays.class);
+    encodeMethodBuilder.addStatement("$T.write('}', out)", Encoders.class);
 
     var encoder = encoderBuilder.addMethod(encodeMethodBuilder.build()).build();
 
@@ -130,13 +131,19 @@ public class JsonProcessor extends AbstractProcessor {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
 
+  private void writeComma(Builder encodeMethodBuilder) {
+    encodeMethodBuilder.addStatement("$T.write(':', out)", Encoders.class);
   }
 
   private void writeFieldName(Builder encodeMethodBuilder, MethodModel getter) {
-    encodeMethodBuilder.addStatement("$T.write('\"', buffer)", Encoders.class);
-    encodeMethodBuilder.addStatement("$T.write($S, buffer)", Encoders.class, getter.fieldName());
-    encodeMethodBuilder.addStatement("$T.write('\"', buffer)", Encoders.class);
+    encodeMethodBuilder.addStatement("$T.write($S, out)", Encoders.class, getter.fieldName());
+  }
+
+  private void writeValue(Builder encodeMethodBuilder, MethodModel getter) {
+    encodeMethodBuilder.addStatement("$T.write(value.$N(), out)", Encoders.class,
+        getter.methodName());
   }
 
   private Optional<? extends Element> getGetterForElement(TypeElement type, Element el) {

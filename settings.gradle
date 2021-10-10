@@ -1,4 +1,5 @@
 rootProject.name = 'com.chermehdi.quik'
 include ':quik-core'
 include ':quik-examples'
+include ':quik-bench'
 
