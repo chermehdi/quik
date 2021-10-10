@@ -1,6 +1,5 @@
 package com.chermehdi.quik.bench;
 
-import com.chermehdi.quik.examples.TeacherEncoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.util.concurrent.TimeUnit;
